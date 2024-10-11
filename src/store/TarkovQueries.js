@@ -405,6 +405,14 @@ export const GetItems = gql`
   }
   ${ItemFrag}
 `
+export const GetItemsByIds = gql`
+  query getItems($lang: LanguageCode!, $gameMode: GameMode!, $ids: [ID]) {
+    items(lang: $lang, gameMode: $gameMode, ids: $ids) {
+      ...itemFrag
+    }
+  }
+  ${ItemFrag}
+`
 export const GetItemsByType = gql`
   query getItems($lang: LanguageCode!, $gameMode: GameMode!, $type: ItemType!){
     items(lang: $lang, gameMode: $gameMode, type: $type) {

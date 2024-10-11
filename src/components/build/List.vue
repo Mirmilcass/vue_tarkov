@@ -2,10 +2,13 @@
 import {useQuery} from "@vue/apollo-composable";
 import {GetItemsByType, GetTraders} from "@/store/TarkovQueries.js";
 import {reactive} from "vue";
+import {useRouter} from "vue-router";
+
+const router = useRouter()
 
 const state = reactive({
-                         searchInput : '', page : 1, offset : 10, data : []
-                       })
+  searchInput : '', page : 1, offset : 10, data : []
+})
 
 const {result, error, loading} = useQuery(GetItemsByType, {
   lang : "ko", gameMode : 'pve', type : 'gun'
@@ -64,6 +67,10 @@ function setPrice(prices, isFlea) {
   result.trader = trader.result.value.traders.find(v => v.normalizedName === priceInfo.vendor.normalizedName)
   return result
 }
+
+function push(item) {
+  router.push({name : 'buildDetail', params : {name : item.normalizedName}, state : {item : item}})
+}
 </script>
 
 <template>
@@ -86,7 +93,7 @@ function setPrice(prices, isFlea) {
       </tr>
       </thead>
       <tbody>
-      <tr v-for="(item, index) of getList()" :key="index">
+      <tr v-for="(item, index) of getList()" :key="index" @click="push(item)">
         <td>
           <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; margin: 5px 5px">
             <img :src="item.iconLink" :alt="item.name" width="64"/>

@@ -1,10 +1,12 @@
-<script setup>
-import Items from "@/components/Items.vue";
-import List from "@/components/build/List.vue";
-</script>
+<script setup></script>
 
 <template>
-  <List/>
+  <nav>
+    <RouterLink to="/">list</RouterLink>
+  </nav>
+  <main>
+    <RouterView/>
+  </main>
 </template>
 
 <style scoped>
