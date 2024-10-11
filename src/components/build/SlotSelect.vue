@@ -25,6 +25,12 @@ const containsItems = computed(() => {
          : props.item.containsItems.flatMap(v => v.item.id)
 })
 
+const left = computed(() => {
+  return {
+    'margin-left' : (props.depth * 15) + 'px'
+  }
+})
+
 function getSlots() {
   let slots = [];
   const properties = props.item.properties;
@@ -46,7 +52,7 @@ function inChild(item) {
 
 function selValue(items, isVal) {
   const find = items.find(v => containsItems.value.includes(v.id));
-  if (!find) return '';
+  if (!find) return 'null';
   return isVal ? find.normalizedName : find;
 }
 
@@ -60,16 +66,16 @@ function updateContainsItems(oldItem, normalName) {
 </script>
 
 <template>
-  <div v-for="(slot, index) in getSlots()" :key="index">
+  <div v-for="(slot, index) in getSlots()" :key="index" :style="left">
     <span>{{ slot.name }}</span>
     <select
         :value="selValue(slot.filters.allowedItems, true)"
         @change="event => updateContainsItems(selValue(slot.filters.allowedItems), event.target.value)"
     >
-      <option :key="0" :value="null">미장착</option>
+      <option :key="0" :value="'null'">미장착</option>
       <option v-for="(part, index) in slot.filters.allowedItems" :key="index+1" :value="part.normalizedName">{{ part.name }}</option>
     </select>
-    <SlotSelect v-if="inChild(selValue(slot.filters.allowedItems))" :item="selValue(slot.filters.allowedItems)" :mods="props.mods" :depth="props.depth + 1"/>
+    <SlotSelect v-if="inChild(selValue(slot.filters.allowedItems))" :item="selValue(slot.filters.allowedItems)" :mods="props.mods" :depth="props.depth + 1" :containsItems="props.containsItems"/>
   </div>
 </template>
 
