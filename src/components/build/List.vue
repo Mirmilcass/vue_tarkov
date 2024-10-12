@@ -69,7 +69,7 @@ function setPrice(prices, isFlea) {
 }
 
 function push(item) {
-  router.push({name : 'buildDetail', params : {name : item.normalizedName}, state : {item : item}})
+  router.push({name : 'buildDetail', state : {item : item}})
 }
 </script>
 

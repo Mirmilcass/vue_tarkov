@@ -1,88 +1,100 @@
 <script setup>
-import _ from "lodash";
-import {computed} from "vue";
+import {computed, reactive} from "vue";
 
 const props = defineProps({
-  item          : Object,
-  mods          : Array,
-  depth         : {
-    type : Number, default : 0
-  },
-  containsItems : {
-    type : Object, default : {
-      value : []
-    }
+  // 상위 아이템 (최상위는 총몸)
+  item : Object,
+  // 부품 목록
+  mods : Array,
+  // 깊이
+  depth : {
+    type    : Number,
+    default : 0
   }
 })
 
-const containsItems = computed(() => {
-  return props.containsItems.value.length > 0
-         ? props.containsItems.value
-         : props.item.containsItems.flatMap(v => v.item.id)
+const state = reactive({
+  slots        : undefined,
+  containsItem : {normalizedName : 'null'}
 })
 
+// 자식 슬롯 여백을 위한 computed
 const left = computed(() => {
   return {
     'margin-left' : (props.depth * 15) + 'px'
   }
 })
 
-function getSlots() {
-  let slots = [];
+// 슬롯 정보 기록
+function setSlots() {
+  let result = []
   const properties = props.item.properties;
   if (properties && Object.keys(properties).includes("slots") && properties.slots.length > 0) {
     properties.slots.forEach(slot => {
-      let slotInfo = _.cloneDeep(slot)
-      if (Object.keys(slot.filters).includes("allowedItems")) {
-        slotInfo.filters.allowedItems = slot.filters.allowedItems.map(allowedItem => props.mods.find(v => v.id === allowedItem.id))
+      const temp = {
+        key          : 0,
+        id           : (props.depth + '.' + result.length) * 1,
+        name         : slot.name,
+        nameId       : slot.nameId,
+        containsItem : {normalizedName : 'null'}
       }
-      slots.push(slotInfo)
+      // 결합 가능 아이템 목록 생성
+      if (Object.keys(slot.filters).includes("allowedItems")) {
+        temp.allowedItems = slot.filters.allowedItems.map(allowedItem => props.mods.find(v => v.id === allowedItem.id))
+      }
+      result.push(temp)
     })
   }
-  return slots
+  state.slots = result
+  return result
 }
 
-function inChild(item) {
-  return Object.keys(item).includes("properties") && Object.keys(item.properties).includes('slots') && item.properties.slots.length > 0;
+const slots = computed(() => {
+  return state.slots ?? setSlots()
+})
+
+function inChild(slot) {
+  const item = slot.containsItem
+  return item.normalizedName !== 'null'
+      && Object.keys(item).includes("properties")
+      && Object.keys(item.properties).includes('slots')
+      && item.properties.slots.length > 0
 }
 
-function selValue(slot, isVal) {
-  const find = slot.filters.allowedItems.find(v => containsItems.value.includes(v.id));
-  if (!find) return 'null';
-  return isVal ? find.normalizedName : find;
+function updateContainsItems(slot, normalName) {
+  const find = props.mods.find(v => v.normalizedName === normalName);
+  state.slots = state.slots.map(v => {
+    if (v.id === slot.id) {
+      v.containsItem = find ?? {normalizedName : 'null'}
+      v.key++
+    }
+    return v
+  })
 }
-
-function updateContainsItems(oldItem, normalName) {
-  let filter = containsItems.value.filter(v => v !== oldItem.id)
-  if (normalName !== "null") {
-    const find = props.mods.find(v => v.normalizedName === normalName)
-    filter.push(find.id)
-  }
-  props.containsItems.value = filter
-}
-
 </script>
 
 <template>
-  <div v-for="(slot, index) in getSlots()" :key="index" :style="left">
-    <div style="display: flex; flex-direction: column;">
-      <span style="margin: 2px 0">{{ slot.name }}</span>
-      <select
-          :value="selValue(slot, true)"
-          @change="event => updateContainsItems(selValue(slot), event.target.value)"
-          style="margin-left: 5px; color: var(--color-text); background-color: var(--color-background-soft)"
-      >
-        <option :key="0" :value="'null'">미장착</option>
-        <option v-for="(part, index) in slot.filters.allowedItems" :key="index+1" :value="part.normalizedName">{{ part.name }}</option>
-      </select>
+  <div>
+    <div v-for="(slot, index) in slots" :key="index" :style="left">
+      <div style="display: flex; flex-direction: column;">
+        <span style="margin: 2px 0">{{ slot.name }}</span>
+        <select
+            :value="slot.containsItem.normalizedName"
+            @change="event => updateContainsItems(slot, event.target.value)"
+            style="margin-left: 5px; color: var(--color-text); background-color: var(--color-background-soft)"
+        >
+          <option :key="0" :value="'null'">미장착</option>
+          <option v-for="(part, index) in slot.allowedItems" :key="index+1" :value="part.normalizedName">{{ part.name }}</option>
+        </select>
+      </div>
+      <SlotSelect
+          v-show="inChild(slot)"
+          :key="slot.id+'-'+slot.nameId+'-'+slot.key"
+          :item="slot.containsItem"
+          :mods="props.mods"
+          :depth="props.depth + 1"
+      />
     </div>
-    <SlotSelect
-        v-if="inChild(selValue(slot))"
-        :item="selValue(slot)"
-        :mods="props.mods"
-        :depth="props.depth + 1"
-        :containsItems="{value: containsItems}"
-    />
   </div>
 </template>
 
