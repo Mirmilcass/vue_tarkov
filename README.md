@@ -1,16 +1,16 @@
 # vue_tarkov
 
-This template should help get you started developing with Vue 3 in Vite.
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
+- Vue
+- [Vue Router](#vue_router)
+- [Apollo + Graphql](#apollo) + [Tarkov API](https://tarkov.dev/api/)
+    - @apollo/client
+    - @vue/apollo-composable
+    - graphql
+    - graphql-tag
+---
+<details>
+<summary style="font-size: 1.5em; font-weight: bold">Project Setup</summary>
+<div>
 
 ```sh
 npm install
@@ -27,3 +27,17 @@ npm run dev
 ```sh
 npm run build
 ```
+
+## [Vue_Router](https://router.vuejs.org/installation)
+```sh
+npm install vue-router@4
+```
+
+## [Apollo](https://apollo.vuejs.org/guide-composable/setup.html)
+```sh
+yarn add @vue/apollo-composable @apollo/client graphql graphql-tag
+```
+tarkov EndPoint : `https://api.tarkov.dev/graphql`
+
+</div>
+</details>
