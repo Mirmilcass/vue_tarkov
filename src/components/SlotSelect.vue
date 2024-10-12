@@ -15,7 +15,6 @@ const props = defineProps({
 
 const state = reactive({
   slots        : undefined,
-  containsItem : {normalizedName : 'null'}
 })
 
 // 자식 슬롯 여백을 위한 computed
